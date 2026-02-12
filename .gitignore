@@ -28,19 +28,14 @@ yarn-error.log*
 .env.*
 
 # ----------------------
-# Node (if you later add backend or tools)
+# Node (future-proof)
 # ----------------------
 node_modules/
 dist/
 build/
 
 # ----------------------
-# Docker
-# ----------------------
-.dockerignore
-
-# ----------------------
-# System files
+# Temporary files
 # ----------------------
 *.tmp
 *.temp
