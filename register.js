@@ -1,10 +1,60 @@
-function toggleOtherHobby() {
-    const hobby = document.getElementById("hobby").value;
-    const otherDiv = document.getElementById("otherHobbyDiv");
+// Password toggle
+document.getElementById("showPassword").addEventListener("change", function () {
+    const pass = document.getElementById("password");
+    pass.type = this.checked ? "text" : "password";
+});
 
-    otherDiv.classList.toggle("d-none", hobby !== "Other");
-}
+// Live validation
+document.getElementById("name").addEventListener("input", function () {
+    this.classList.toggle("is-invalid", this.value.trim().length < 3);
+});
 
+document.getElementById("phone").addEventListener("input", function () {
+    this.classList.toggle("is-invalid", !/^[6-9]\d{9}$/.test(this.value));
+});
+
+document.getElementById("email").addEventListener("input", function () {
+    this.classList.toggle("is-invalid", !/^\S+@\S+\.\S+$/.test(this.value));
+});
+
+document.getElementById("password").addEventListener("input", function () {
+    const regex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
+    this.classList.toggle("is-invalid", !regex.test(this.value));
+});
+
+document.getElementById("dob").addEventListener("change", function () {
+    const dob = new Date(this.value);
+    const today = new Date();
+    let age = today.getFullYear() - dob.getFullYear();
+
+    if (today.getMonth() < dob.getMonth() ||
+        (today.getMonth() === dob.getMonth() && today.getDate() < dob.getDate())) {
+        age--;
+    }
+
+    this.classList.toggle("is-invalid", age < 18);
+});
+
+// Add custom hobby
+document.getElementById("addHobbyBtn").addEventListener("click", function () {
+    const input = document.getElementById("customHobbyInput");
+    const value = input.value.trim();
+    if (value === "") return;
+
+    const container = document.getElementById("hobbyContainer");
+
+    const div = document.createElement("div");
+    div.className = "form-check";
+    div.innerHTML = `
+        <input class="form-check-input hobby-checkbox" type="checkbox" value="${value}" checked>
+        <label class="form-check-label">${value}</label>
+    `;
+
+    container.appendChild(div);
+    input.value = "";
+});
+
+// Submit + Store in sessionStorage
 document.getElementById("registerForm").addEventListener("submit", function (e) {
     e.preventDefault();
 
@@ -13,79 +63,35 @@ document.getElementById("registerForm").addEventListener("submit", function (e) 
     const email = document.getElementById("email").value.trim();
     const dob = document.getElementById("dob").value;
     const password = document.getElementById("password").value;
+    const address = document.getElementById("address").value.trim();
     const city = document.getElementById("city").value;
-    const hobby = document.getElementById("hobby").value;
-    const otherHobby = document.getElementById("otherHobby").value.trim();
-    const error = document.getElementById("error");
 
-    error.textContent = "";
+    const hobbies = Array.from(
+        document.querySelectorAll(".hobby-checkbox:checked")
+    ).map(cb => cb.value);
 
-    // Name
-    if (name.length < 3) {
-        error.textContent = "Name must be at least 3 characters.";
+    if (hobbies.length === 0) {
+        document.getElementById("hobbyError").classList.remove("d-none");
         return;
     }
 
-    // Phone
-    if (!/^[6-9]\d{9}$/.test(phone)) {
-        error.textContent = "Enter a valid 10-digit Indian phone number.";
-        return;
-    }
+    document.getElementById("hobbyError").classList.add("d-none");
 
-    // Email
-    if (!/^\S+@\S+\.\S+$/.test(email)) {
-        error.textContent = "Enter a valid email address.";
-        return;
-    }
+    const userData = {
+        name,
+        phone,
+        email,
+        dob,
+        password,
+        address,
+        city,
+        hobbies
+    };
 
-    // Date of Birth (18+ check)
-    if (dob === "") {
-        error.textContent = "Please select your date of birth.";
-        return;
-    }
+    // Store as string
+    sessionStorage.setItem("userData", JSON.stringify(userData));
 
-    const birthDate = new Date(dob);
-    const today = new Date();
+    alert("Registration Successful & Data Stored in Session");
 
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-
-    if (monthDiff < 0 ||(monthDiff === 0 && today.getDate() < birthDate.getDate())) 
-    {
-        age--;
-    }
-
-    if (age < 18) {
-        error.textContent = "You must be at least 18 years old to register.";
-        return;
-    }
-
-    // Password
-    const passRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
-    if (!passRegex.test(password)) {
-        error.textContent =
-            "Password must have 8 characters, 1 uppercase, 1 number, and 1 special character.";
-        return;
-    }
-
-    // City
-    if (city === "") {
-        error.textContent = "Please select a city.";
-        return;
-    }
-
-    // Hobby
-    if (hobby === "") {
-        error.textContent = "Please select a hobby.";
-        return;
-    }
-
-    if (hobby === "Other" && otherHobby === "") {
-        error.textContent = "Please specify your hobby.";
-        return;
-    }
-
-    alert("Registration Successful 🎉");
     this.reset();
-    document.getElementById("otherHobbyDiv").classList.add("d-none");
 });
